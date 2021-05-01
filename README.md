@@ -1,7 +1,7 @@
 # TinyICOC - AVR In-Circuit Oscillator Calibrator
 Sometimes AVRs are operated without an external clock. The internal oscillator does a good job in most applications, but when it comes to precise timing, it is too inaccurate. The accuracy of the oscillator of an AVR is only +/-10%. Fortunately, the oscillator can be calibrated, increasing its accuracy to +/-2% or better. There are a few ways to perform this manual calibration, but several steps are required. The TinyICOC does this fully automatically. Simply connect the device to the target MCU via the ICSP header and press the button.
 
-- Design Files (EasyEDA):
+- Design Files (EasyEDA): https://easyeda.com/wagiminator/attiny84-tinyicoc
 
 ![pic1.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyICOC/main/documentation/TinyICOC_pic1.jpg)
 
