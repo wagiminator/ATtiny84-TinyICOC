@@ -8,7 +8,7 @@ Sometimes AVRs are operated without an external clock. The internal oscillator d
 # Hardware
 The TinyICOC is powered by the target board through the ICSP connection. On the one hand, this means that there is no need for a separate power supply and, on the other hand, the oscillator of the target MCU is automatically calibrated at the supply voltage of the target board.
 
-The [ATtiny84](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf) was chosen as the microcontroller for the TinyCalibrator because it has exactly the necessary number of GPIO pins. For accurate frequency measurements, the ATtiny84 is operated with an external 12 MHz crystal. Since the current software version only requires less than 3 KByte, an ATtiny44 can also be used.
+The [ATtiny84](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf) was chosen as the microcontroller for the TinyICOC because it has exactly the necessary number of GPIO pins. For accurate frequency measurements, the ATtiny84 is operated with an external 12 MHz crystal. Since the current software version only requires less than 3 KByte, an ATtiny44 can also be used.
 
 The user interface utilizes one button and a [128x32 pixels OLED display](http://aliexpress.com/wholesale?SearchText=128+32+0.91+oled).
 
