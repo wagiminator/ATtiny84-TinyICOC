@@ -10,7 +10,7 @@ The TinyICOC is powered by the target board through the ICSP connection. On the 
 
 The [ATtiny84](http://ww1.microchip.com/downloads/en/devicedoc/Atmel-7701_Automotive-Microcontrollers-ATtiny24-44-84_Datasheet.pdf) was chosen as the microcontroller for the TinyCalibrator because it has exactly the necessary number of GPIO pins. For accurate frequency measurements, the ATtiny84 is operated with an external 12 MHz crystal. Since the current software version only requires less than 3 KByte, an ATtiny44 can also be used.
 
-The user interface utilizes one button and a [128x64 pixels OLED display](http://aliexpress.com/wholesale?SearchText=128+64+0.96+oled+new+4pin).
+The user interface utilizes one button and a [128x32 pixels OLED display](http://aliexpress.com/wholesale?SearchText=128+32+0.91+oled).
 
 ![pic3.jpg](https://raw.githubusercontent.com/wagiminator/ATtiny84-TinyICOC/main/documentation/TinyICOC_pic3.jpg)
 
@@ -71,6 +71,8 @@ The same ICSP connector can be used to upload the firmware, which is otherwise i
 - Run "make install" to compile, burn the fuses and upload the firmware.
 
 # Operating Instructions
+Warning: The firmware on the target MCU will be erased!
+
 1. Connect the TinyICOC to the ICSP header of the target board.
 2. Provide power to the target board.
 3. Push the button.
