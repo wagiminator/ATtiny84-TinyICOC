@@ -7,7 +7,7 @@
 # Type "make help" in the command line.
 
 # Input and Output File Names
-SKETCH  = TinyICOC_v0.1.ino
+SKETCH  = TinyICOC_v0.2.ino
 TARGET  = tinyicoc
 
 # Microcontroller Options
