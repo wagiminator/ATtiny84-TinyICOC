@@ -26,7 +26,7 @@
 //                       Vcc  1|°   |14  GND
 // 12M CRYSTAL --- (D10) PB0  2|    |13  PA0 (D0) --- I2C SCK OLED
 // 12M CRYSTAL --- (D9)  PB1  3|    |12  PA1 (D1) --- I2C SDA OLED
-// RESET --------- (D11) PB3  4|    |11  PA2 (D2) --- TGT BUTTON
+// RESET --------- (D11) PB3  4|    |11  PA2 (D2) --- BUTTON
 //                 (D8)  PB2  5|    |10  PA3 (D3) --- TGT OSC
 // TGT !RST ------ (D7)  PA7  6|    |9   PA4 (D4) --- TGT SCK
 // TGT MOSI ------ (D6)  PA6  7|    |8   PA5 (D5) --- TGT MISO
