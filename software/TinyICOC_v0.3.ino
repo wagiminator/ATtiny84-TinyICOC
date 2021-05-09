@@ -390,7 +390,7 @@ const uint8_t PROG_M8[] PROGMEM = {
 
 // Target data
 const TGT_TYPE TGTs[] PROGMEM = {
-  // SIGNATURE  LFUSE HFUSE EFUSE PSIZE PLENGTH PROG      Freq  NAME 
+  // SIGNATURE  LFUSE HFUSE EFUSE PSIZE PLENGTH PROG      FREQ  NAME 
   {   0x9007,   0x6A, 0xFF, 0xFF, 16,   72,     PROG_T13, 9600, "ATTINY13  "  },
   {   0x9108,   0x62, 0xDF, 0xFF, 16,   84,     PROG_Tx5, 8000, "ATTINY25  "  },
   {   0x9206,   0x62, 0xDF, 0xFF, 32,   84,     PROG_Tx5, 8000, "ATTINY45  "  },
@@ -433,20 +433,18 @@ void ICSP_release(void) {
   DDRA  &= ~((1<<RST_PIN) | (1<<SCK_PIN) | (1<<MOSI_PIN));
 }
 
-// ICSP send instruction byte and receive reply
-uint8_t ICSP_sendByte(uint8_t instr) {
-  uint8_t reply = 0;
+// ICSP send instruction byte and receive reply (SPI bit-banging)
+uint8_t ICSP_sendByte(uint8_t byte) {
   for(uint8_t i=8; i; i--) {
-    (instr & 0x80) ? (ICSP_MOSI_HIGH()) : (ICSP_MOSI_LOW());
-    instr<<=1;
+    (byte & 0x80) ? (ICSP_MOSI_HIGH()) : (ICSP_MOSI_LOW());
+    byte<<=1;
     ICSP_DELAY();
     ICSP_SCK_HIGH();
     ICSP_DELAY();
-    reply <<= 1;
-    if(ICSP_MISO_BIT) reply |= 1;
+    if(ICSP_MISO_BIT) byte |= 1;
     ICSP_SCK_LOW();
   }        
-  return reply;
+  return byte;
 }
 
 // ICSP enter the programming mode
