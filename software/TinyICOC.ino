@@ -1,5 +1,15 @@
-// TinyICOC - AVR In-Circuit Oscillator Calibrator
+// ===================================================================================
+// Project:   TinyICOC - AVR In-Circuit Oscillator Calibrator based on ATtiny84
+// Version:   v1.0
+// Year:      2021
+// Author:    Stefan Wagner
+// Github:    https://github.com/wagiminator
+// EasyEDA:   https://easyeda.com/wagiminator
+// License:   http://creativecommons.org/licenses/by-sa/3.0/
+// ===================================================================================
 //
+// Description:
+// ------------
 // Sometimes AVRs are operated without an external clock. The internal
 // oscillator does a good job in most applications, but when it comes to
 // precise timing, it is too inaccurate. The accuracy of the oscillator
@@ -22,25 +32,8 @@
 // is repeated until the OSCCAL value, which leads to the lowest frequency
 // deviation, has been found.
 //
-//                             +-\/-+
-//                       Vcc  1|°   |14  GND
-// 12M CRYSTAL --- (D10) PB0  2|    |13  PA0 (D0) --- I2C SCK OLED
-// 12M CRYSTAL --- (D9)  PB1  3|    |12  PA1 (D1) --- I2C SDA OLED
-// RESET --------- (D11) PB3  4|    |11  PA2 (D2) --- BUTTON
-//                 (D8)  PB2  5|    |10  PA3 (D3) --- TGT OSC
-// TGT !RST ------ (D7)  PA7  6|    |9   PA4 (D4) --- TGT SCK
-// TGT MOSI ------ (D6)  PA6  7|    |8   PA5 (D5) --- TGT MISO
-//                             +----+
-//
-// Core:          ATtinyCore (https://github.com/SpenceKonde/ATTinyCore)
-// Board:         ATtiny24/44/84(a) (No bootloader)
-// Chip:          ATtiny44(a) or ATtiny84(a)
-// Clock:         12 MHz (external)
-// Millis/Micros: disabled
-// Leave the rest on default settings. Don't forget to "Burn bootloader"!
-// No Arduino core functions or libraries are used. Use the makefile if 
-// you want to compile without Arduino IDE.
-//
+// References:
+// -----------
 // The I²C OLED implementation is based on TinyOLEDdemo
 // https://github.com/wagiminator/ATtiny13-TinyOLEDdemo
 //
@@ -50,19 +43,45 @@
 // The calibration function is based on TinyCalibrator
 // https://github.com/wagiminator/ATtiny84-TinyCalibrator
 //
-// 2021 by Stefan Wagner 
-// Project Files (EasyEDA): https://easyeda.com/wagiminator
-// Project Files (Github):  https://github.com/wagiminator
-// License: http://creativecommons.org/licenses/by-sa/3.0/
+// Wiring:
+// -------
+//                                 +-\/-+
+//                           Vcc  1|°   |14  GND
+// 12M CRYSTAL -------- XTAL PB0  2|    |13  PA0 ADC0 AREF --- I2C SCK OLED
+// 12M CRYSTAL -------- XTAL PB1  3|    |12  PA1 ADC1 AIN0 --- I2C SDA OLED
+//       RESET -------- !RST PB3  4|    |11  PA2 ADC2 AIN1 --- BUTTON
+//             -------- INT0 PB2  5|    |10  PA3 ADC3 T0 ----- TGT OSC
+//    TGT !RST -------- ADC7 PA7  6|    |9   PA4 ADC4 SCK ---- TGT SCK
+//    TGT MOSI --- MOSI ADC6 PA6  7|    |8   PA5 ADC5 MISO --- TGT MISO
+//                                 +----+
+//
+// Compilation Settings:
+// ---------------------
+// Core:    ATtinyCore (https://github.com/SpenceKonde/ATTinyCore)
+// Board:   ATtiny24/44/84(a) (No bootloader)
+// Chip:    ATtiny44(a) or ATtiny84(a)
+// Clock:   12 MHz (external)
+// Millis:  disabled
+// BOD:     2.7V
+//
+// Leave the rest on default settings. Don't forget to "Burn bootloader"!
+// No Arduino core functions or libraries are used. Use the makefile if 
+// you want to compile without Arduino IDE.
+//
+// Fuse settings: -U lfuse:w:0xff:m -U hfuse:w:0xd5:m -U efuse:w:0xff:m
 
+
+// ===================================================================================
+// Libraries and Definitions
+// ===================================================================================
 
 // Libraries
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <avr/pgmspace.h>
-#include <util/delay.h>
+#include <avr/io.h>         // for GPIO
+#include <avr/interrupt.h>  // for interrupts
+#include <avr/pgmspace.h>   // to store data in programm memory
+#include <util/delay.h>     // for delays
 
-// Pin assignments
+// Pin definitions
 #define I2C_SCL     PA0     // I2C SCL
 #define I2C_SDA     PA1     // I2C SDA
 #define BUTTON_PIN  PA2     // button pin
@@ -72,9 +91,9 @@
 #define MOSI_PIN    PA6     // ICSP MOSI
 #define RST_PIN     PA7     // ICSP !RST
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // I2C Implementation
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // I2C macros
 #define I2C_SDA_HIGH()  DDRA &= ~(1<<I2C_SDA) // release SDA   -> pulled HIGH by resistor
@@ -115,9 +134,9 @@ void I2C_stop(void) {
   I2C_SDA_HIGH();                         // stop condition: SDA goes HIGH second
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // OLED Implementation
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // OLED definitions
 #define OLED_ADDR       0x78    // OLED write address
@@ -197,7 +216,7 @@ uint8_t OLED_page;
 void OLED_init(void) {
   I2C_start(OLED_ADDR);                     // start transmission to OLED
   I2C_write(OLED_CMD_MODE);                 // set command mode
-  for (uint8_t i=0; i<OLED_INIT_LEN; i++) 
+  for(uint8_t i=0; i<OLED_INIT_LEN; i++) 
     I2C_write(pgm_read_byte(&OLED_INIT_CMD[i])); // send the command bytes
   I2C_stop();                               // stop transmission
 }
@@ -234,13 +253,13 @@ void OLED_clearScreen(void) {
   do {
     I2C_write(0x00);
     I2C_write(0x00);
-  } while (--i);
+  } while(--i);
   I2C_stop();                               // stop transmission
 }
 
 // OLED plot a character
 void OLED_plotChar(uint8_t ch) {
-  if (OLED_page > 1) {                      // big character ?
+  if(OLED_page > 1) {                       // big character ?
     ch = (ch << 3) + (ch << 1);             // calculate position of character in font array
     I2C_write(0x00); I2C_write(0x00);       // print spacing between characters
     for(uint8_t i=10; i; i--)               // 10 bytes per character
@@ -259,7 +278,7 @@ void OLED_plotChar(uint8_t ch) {
 void OLED_printPrg(const char* p) {
   I2C_start(OLED_ADDR);                     // start transmission to OLED
   I2C_write(OLED_DAT_MODE);                 // set data mode
-  while (char ch = pgm_read_byte(p++))      // repeat until string terminator
+  while(char ch = pgm_read_byte(p++))       // repeat until string terminator
     OLED_plotChar(ch);                      // print character on OLED
   I2C_stop();                               // stop transmission
 }
@@ -268,7 +287,7 @@ void OLED_printPrg(const char* p) {
 void OLED_printStr(const char* p) {
   I2C_start(OLED_ADDR);                     // start transmission to OLED
   I2C_write(OLED_DAT_MODE);                 // set data mode
-  while (*p) OLED_plotChar(*p++);           // print the characters
+  while(*p) OLED_plotChar(*p++);            // print the characters
   I2C_stop();                               // stop transmission
 }
 
@@ -283,12 +302,12 @@ void OLED_printDec(uint16_t value) {
   for(uint8_t digit = 0; digit < 5; digit++) {  // 5 digits
     uint8_t digitval = 0;                   // start with digit value 0
     uint16_t divider = pgm_read_word(&DIVIDER[digit]);
-    while (value >= divider) {              // if current divider fits into the value
+    while(value >= divider) {               // if current divider fits into the value
       leadflag = 1;                         // end of leading spaces
       digitval++;                           // increase digit value
       value -= divider;                     // decrease value by divider
     }
-    if (leadflag || (digit == 4)) OLED_plotChar(digitval); // print the digit
+    if(leadflag || (digit == 4)) OLED_plotChar(digitval); // print the digit
     else OLED_plotChar(SPACE);              // or print leading space
   }
   I2C_stop();                               // stop transmission
@@ -309,7 +328,7 @@ void OLED_printVCC(uint8_t value) {
   I2C_start(OLED_ADDR);                     // start transmission to OLED
   I2C_write(OLED_DAT_MODE);                 // set data mode
   uint8_t digitval = 0;                     // start with digit value 0
-  while (value >= 10) {                     // if current divider fits into the value
+  while(value >= 10) {                      // if current divider fits into the value
     digitval++;                             // increase digit value
     value -= 10;                            // decrease value by divider
   }
@@ -319,9 +338,9 @@ void OLED_printVCC(uint8_t value) {
   I2C_stop();                               // stop transmission
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // Target Chip Definitions
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Definition of target data type
 typedef struct {
@@ -404,9 +423,9 @@ const TGT_TYPE TGTs[] PROGMEM = {
 // Number of target definitions
 #define TGT_LENGTH  8
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // In-Circuit Serial Programmer Implementation
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // ICSP macros
 #define ICSP_RST_HIGH()     PORTA |=  (1<<RST_PIN)
@@ -455,7 +474,7 @@ uint8_t ICSP_enterProgMode(void) {
   ICSP_sendByte(0x53);
   uint8_t echo = ICSP_sendByte(0x00);
   ICSP_sendByte(0x00);
-  return (echo == 0x53);
+  return(echo == 0x53);
 }
 
 // ICSP exit the programming mode
@@ -531,9 +550,9 @@ void ICSP_writeFlash(void) {
   }
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // Frequency Measurement Implementation
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Target power macros
 #define FRQ_TOP   (F_CPU / 250) - 1 // 250 = 8 [prescaler] * (1000 / 32) [1/32ms]
@@ -576,9 +595,9 @@ ISR(TIM1_COMPA_vect) {
   FRQ_busy = 0;                     // sampling complete
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // ADC Implementation for Supply Voltage Measurement
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Setup ADC
 void ADC_init(void) {
@@ -595,9 +614,9 @@ uint8_t ADC_readVCC(void) {
   return vcc;                       // return VCC in dV
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // Button Functions
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Button init
 void BUTTON_init(void) {
@@ -611,9 +630,9 @@ void BUTTON_wait(void) {
   while( PINA & (1<<BUTTON_PIN));   // wait for button pressed
 }
 
-// -----------------------------------------------------------------------------
+// ===================================================================================
 // Main Function
-// -----------------------------------------------------------------------------
+// ===================================================================================
 
 // Some "strings"
 const char SEP1[] PROGMEM = { 17, 22, 22,  0 };  // "V  "
@@ -622,8 +641,8 @@ const char SEP3[] PROGMEM = { 18, 16, 20,  0 };  // "kHz"
 
 // Calculate difference
 uint16_t diff(uint16_t a, uint16_t b) {
-  if (a > b) return (a - b);
-  return (b - a);
+  if(a > b) return(a - b);
+  return(b - a);
 }
 
 // Main Function
@@ -653,7 +672,7 @@ int main(void) {
     ICSP_enterProgMode();
     signature = ICSP_readSignature();
     for(target=0; target<TGT_LENGTH; target++) {
-      if (signature == pgm_read_word(&TGTs[target])) break;
+      if(signature == pgm_read_word(&TGTs[target])) break;
     }
     
     // Print error message if negative detection of MCU
@@ -692,7 +711,7 @@ int main(void) {
       frequency = FRQ_measure();
       
       // Leave if current OSCCAL value is worse than the last one
-      if (diff(frequency, TGT.FREQ) >= difference) break;
+      if(diff(frequency, TGT.FREQ) >= difference) break;
 
       // Print current calibration results
       OLED_setCursor(0,2);
@@ -703,8 +722,8 @@ int main(void) {
       // Calculate next OSCCAL value
       lastcalib = calib;
       difference = diff(frequency, TGT.FREQ);
-      if (difference == 0) break;
-      if (frequency > TGT.FREQ) calib--;
+      if(difference == 0) break;
+      if(frequency > TGT.FREQ) calib--;
       else calib++;
 
       // Program target for next calibration value
